@@ -49,6 +49,10 @@ public class Rest implements Music {
         if (duration != other.duration)
             return false;
         return true;
+    } 
+
+    public double duration() {
+        return this.duration;
     }
     
     
