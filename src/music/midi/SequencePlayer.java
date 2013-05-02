@@ -21,7 +21,7 @@ public class SequencePlayer {
 
     // next available channel number (unassigned to an instrument yet)
     private int nextChannel = 0;
-    
+
     private final Sequencer sequencer;
     private final Track track;
     private final int beatsPerMinute;
@@ -48,7 +48,7 @@ public class SequencePlayer {
         synthesizer = MidiSystem.getSynthesizer();
         synthesizer.open();
         synthesizer.loadAllInstruments(synthesizer.getDefaultSoundbank());
-        
+
         this.sequencer = MidiSystem.getSequencer();
 
         // Create a sequence object with with tempo-based timing, where
@@ -98,7 +98,7 @@ public class SequencePlayer {
             addMidiEvent(ShortMessage.NOTE_OFF, channel, note, startTick + numTicks);
         } catch (InvalidMidiDataException e) {
             String msg = MessageFormat.format("Cannot add note with the pitch {0} at tick {1} " +
-            		"for duration of {2}", note, startTick, numTicks);
+                    "for duration of {2}", note, startTick, numTicks);
             throw new RuntimeException(msg, e);
         }
     }
@@ -128,13 +128,13 @@ public class SequencePlayer {
         sequencer.stop();
         sequencer.close();
     }
-    
+
     private int getChannel(music.Instrument instr) {
         // check whether this instrument already has a channel
         if (channels.containsKey(instr)) {
             return channels.get(instr);
         }
-        
+
         int channel = allocateChannel();
         patchInstrumentIntoChannel(channel, instr);            
         channels.put(instr, channel);
@@ -147,7 +147,7 @@ public class SequencePlayer {
         if (nextChannel >= channels.length) throw new RuntimeException("tried to use too many instruments: limited to " + channels.length);
         return nextChannel++;
     }
-    
+
     private void patchInstrumentIntoChannel(int channel, music.Instrument instr) {
         try {
             addMidiEvent(ShortMessage.PROGRAM_CHANGE, channel, instr.ordinal(), 0);
@@ -165,7 +165,7 @@ public class SequencePlayer {
     @Override
     public String toString() {
         String trackInfo = "";
-        
+
         for (int i = 0; i < track.size(); i++) {
             MidiEvent e = track.get(i);
             MidiMessage msg = e.getMessage();
@@ -202,34 +202,43 @@ public class SequencePlayer {
 
         // create a new player, with 120 beats (i.e. quarter note) per
         // minute, with 2 tick per quarter note
-        player = new SequencePlayer(120, 2);
+        try {
+            player = new SequencePlayer(120, 2);
 
-        final Pitch C = new Pitch('C');
-        int start = 1;
-        for (Pitch p : new Pitch[] {
-                new Pitch('C'),
-                new Pitch('D'),
-                new Pitch('E'),
-                new Pitch('F'),
-                new Pitch('G'),
-                new Pitch('A'),
-                new Pitch('B'),
-                new Pitch('C').transpose(Pitch.OCTAVE),
-                new Pitch('B'),
-                new Pitch('A'),
-                new Pitch('G'),
-                new Pitch('F'),
-                new Pitch('E'),
-                new Pitch('D'),
-                new Pitch('A'),
-        }) {
-            player.addNote(Instrument.PIANO, p.difference(C) + 60, start++, 1);
+
+            final Pitch C = new Pitch('C');
+            int start = 1;
+            for (Pitch p : new Pitch[] {
+                    new Pitch('C'),
+                    new Pitch('D'),
+                    new Pitch('E'),
+                    new Pitch('F'),
+                    new Pitch('G'),
+                    new Pitch('A'),
+                    new Pitch('B'),
+                    new Pitch('C').transpose(Pitch.OCTAVE),
+                    new Pitch('B'),
+                    new Pitch('A'),
+                    new Pitch('G'),
+                    new Pitch('F'),
+                    new Pitch('E'),
+                    new Pitch('D'),
+                    new Pitch('A'),
+            }) {
+                player.addNote(Instrument.PIANO, p.difference(C) + 60, start++, 1);
+            }
+
+            System.out.println(player);
+
+            // play!
+            player.play();
+        } catch (MidiUnavailableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvalidMidiDataException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-
-        System.out.println(player);
-
-        // play!
-        player.play();
 
         /*
          * Note: A possible weird behavior of the Java sequencer: Even if the
